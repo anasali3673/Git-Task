@@ -1,75 +1,87 @@
+import java.util.HashSet;
+import java.util.Set;
+import java.util.regex.Pattern;
+
 public class Main {
 
-    // Method to validate user credentials
-    public boolean validateUser(String username, String password) {
-        // Check if username and password are not null or empty
+    private Set<String> registeredUsernames = new HashSet<>();
+
+    public boolean validateUser(String username, String password, String email) {
         if (username == null || username.isEmpty()) {
-            System.out.println("Username cannot be null or empty.");
+            log("Registration failed: Username cannot be null or empty.");
             return false;
         }
         if (password == null || password.isEmpty()) {
-            System.out.println("Password cannot be null or empty.");
+            log("Registration failed: Password cannot be null or empty.");
+            return false;
+        }
+        if (email == null || email.isEmpty()) {
+            log("Registration failed: Email cannot be null or empty.");
             return false;
         }
 
-        // Example: Check username and password format
+        if (registeredUsernames.contains(username)) {
+            log("Registration failed: Username '" + username + "' is already taken.");
+            return false;
+        }
+
         if (!isValidUsername(username)) {
-            System.out.println("Invalid username format.");
+            log("Registration failed: Invalid username format.");
             return false;
         }
         if (!isValidPassword(password)) {
-            System.out.println("Invalid password format.");
+            log("Registration failed: Invalid password format.");
+            return false;
+        }
+        if (!isValidEmail(email)) {
+            log("Registration failed: Invalid email format.");
             return false;
         }
 
-        // Example: Check against stored credentials (dummy check here)
-        if (!checkCredentials(username, password)) {
-            System.out.println("Username or password is incorrect.");
-            return false;
-        }
-
-        // If all checks pass
-        System.out.println("User validation successful.");
+        registeredUsernames.add(username);
+        log("User registration successful: " + username);
         return true;
     }
 
     private boolean isValidUsername(String username) {
-        // Example criteria: Alphanumeric and length between 3-15
         return username.matches("^[a-zA-Z0-9]{3,15}$");
     }
 
     private boolean isValidPassword(String password) {
-        // Example criteria: At least 8 characters, including one number and one special character
         return password.matches("^(?=.*[0-9])(?=.*[!@#$%^&*])[A-Za-z\\d!@#$%^&*]{8,}$");
     }
 
-    private boolean checkCredentials(String username, String password) {
-        // Placeholder for credential check (replace with actual logic)
-        // For demonstration, let's say the valid credentials are:
-        return "validUser".equals(username) && "Password1!".equals(password);
+    private boolean isValidEmail(String email) {
+        String emailRegex = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$";
+        return Pattern.matches(emailRegex, email);
+    }
+
+    private void log(String message) {
+        System.out.println(message);
     }
 
     public static void main(String[] args) {
-        // Create an instance of Main to use the validateUser method
         Main userValidator = new Main();
 
         // Test cases
         String[][] testCases = {
-                {"validUser", "Password1!"},
-                {"invalidUser", "wrongPassword"},
-                {"", "Password1!"},
-                {"validUser", ""},
-                {"invalidUser@", "Password1!"},
-                {"validUser", "short"},
-                {"user", "Valid1!"}
+                {"validUser", "Password1!", "validUser@example.com"},
+                {"validUser", "Password1!", "validUser@example.com"},
+                {"invalidUser", "wrongPassword", "invalidUser@example.com"},
+                {"", "Password1!", "emptyUser@example.com"},
+                {"validUser", "", "validUser@example.com"},
+                {"duplicateUser", "Password1!", "duplicateUser@example.com"},
+                {"duplicateUser", "Password1!", "duplicateUser@example.com"},
+                {"validUser@", "Password1!", "validUser@example.com"},
+                {"user", "Valid1!", "user@example.com"}
         };
 
-        // Validate each test case
         for (String[] testCase : testCases) {
             String username = testCase[0];
             String password = testCase[1];
+            String email = testCase[2];
             System.out.println("Validating user: " + username);
-            boolean isValid = userValidator.validateUser(username, password);
+            boolean isValid = userValidator.validateUser(username, password, email);
             System.out.println("Validation result: " + isValid + "\n");
         }
     }
